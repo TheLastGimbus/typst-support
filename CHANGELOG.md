@@ -2,7 +2,7 @@
 
 # typst-support Changelog
 
-## [Unreleased]
+## [0.0.7] - 2026-11-21
 
 ### Fixed
 
@@ -22,5 +22,6 @@
 - Initial plugin and integration with Tinymist LSP created
   from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
 
-[Unreleased]: https://github.com/garetht/typst-support/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/garetht/typst-support/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/garetht/typst-support/compare/v0.0.4...v0.0.7
 [0.0.4]: https://github.com/garetht/typst-support/commits/v0.0.4
