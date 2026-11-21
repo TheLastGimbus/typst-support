@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Preview now works with tinymist 0.13.14 and above; the preview command is adapted to the server's version
+
+### Changed
+
+- Bumped automatically downloaded tinymist to `v0.15.12`
+
 ## [0.0.4] - 2025-06-25
 
 ### Added

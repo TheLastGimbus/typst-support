@@ -2,6 +2,7 @@ package com.github.garetht.typstsupport.previewserver
 
 import com.github.garetht.typstsupport.languageserver.TypstLanguageServerManager
 import com.github.garetht.typstsupport.languageserver.TypstLspServerSupportProvider
+import com.github.garetht.typstsupport.languageserver.locations.Version
 import com.google.gson.internal.LinkedTreeMap
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
@@ -10,6 +11,7 @@ import com.intellij.platform.lsp.api.LspServer
 import com.intellij.platform.lsp.api.LspServerManager
 import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.ExecuteCommandParams
+import org.eclipse.lsp4j.InitializeResult
 import java.io.IOException
 import java.net.ServerSocket
 import java.util.UUID
@@ -18,6 +20,14 @@ import java.util.concurrent.atomic.AtomicInteger
 
 
 private val LOG = logger<TinymistPreviewServerManager>()
+
+// Extracts the running server's version from the LSP `InitializeResult`
+// (serverInfo.version, e.g. "0.15.12"). Returns null when the server did not
+// report one.
+internal fun tinymistVersionOf(server: LspServer): Version? {
+  val serverVersion = server.initializeResult?.serverInfo?.version ?: return null
+  return Version.parseVersion(serverVersion)
+}
 
 class TinymistPreviewServerManager : PreviewServerManager {
 
@@ -124,17 +134,25 @@ class TinymistPreviewServerManager : PreviewServerManager {
     dataPlanePort: Int,
     controlPlanePort: Int
   ): String? {
+    val server = retrieveServer(project) ?: return null
+
+    // The running server's version decides which CLI syntax the preview
+    // command accepts (see `partialRenderingFlag`).
+    val tinymistVersion = tinymistVersionOf(server)
+    LOG.info("Tinymist server version: ${tinymistVersion?.toPathString() ?: "unknown"}")
+
     val options =
       TinymistPreviewOptions(
         dataPlaneHostPort = dataPlanePort,
         controlPlaneHostPort = controlPlanePort,
         partialRendering = true,
         taskId = taskId,
+        tinymistVersion = tinymistVersion,
       )
 
     LOG.info("Starting server with command: $options")
 
-    return retrieveServer(project)?.sendRequestSync {
+    return server.sendRequestSync {
       it.workspaceService.executeCommand(
         ExecuteCommandParams(
           "tinymist.doStartPreview",
